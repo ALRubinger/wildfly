@@ -22,9 +22,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
+
+import javax.management.MBeanServerConnection;
+
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor;
 import org.jboss.arquillian.protocol.jmx.JMXMethodExecutor.ExecutionType;
-import org.jboss.arquillian.protocol.jmx.JMXTestRunnerMBean;
 import org.jboss.arquillian.spi.Configuration;
 import org.jboss.arquillian.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.spi.Context;
@@ -37,25 +49,13 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.ServerController;
 import org.jboss.dmr.ModelNode;
 
-import javax.management.MBeanServerConnection;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
-
 /**
- * JBossASEmbeddedContainer
+ * JBossAsManagedContainer
  *
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public class JBossAsManagedContainer extends AbstractDeployableContainer {
+public final class JBossAsManagedContainer extends AbstractDeployableContainer {
 
     private final Logger log = Logger.getLogger(JBossAsManagedContainer.class.getName());
     private MBeanServerConnectionProvider provider;
@@ -70,7 +70,7 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
     }
 
     @Override
-    public void start(Context context) throws LifecycleException {
+    protected void startInternal(Context context) throws LifecycleException {
         try {
             String jbossHomeKey = "jboss.home";
             String jbossHomeDir = System.getProperty(jbossHomeKey);
@@ -124,8 +124,9 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             });
             Runtime.getRuntime().addShutdownHook(shutdownThread);
 
-            long timeout = getContainerConfiguration().getStartupTimeout();
+            long startupTimeout = getContainerConfiguration().getStartupTimeout();
 
+            long timeout = startupTimeout;
             boolean serverAvailable = false;
             while (timeout > 0 && serverAvailable == false) {
 
@@ -138,37 +139,15 @@ public class JBossAsManagedContainer extends AbstractDeployableContainer {
             }
 
             if (!serverAvailable) {
-                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", timeout));
+                throw new TimeoutException(String.format("Managed server was not started within [%d] ms", startupTimeout));
             }
-
-            boolean testRunnerMBeanAvailable = false;
-            MBeanServerConnection mbeanServer = null;
-            while (timeout > 0 && testRunnerMBeanAvailable == false) {
-                if (mbeanServer == null) {
-                    try {
-                        mbeanServer = getMBeanServerConnection();
-                    } catch (Exception ex) {
-                        // ignore
-                    }
-                }
-
-                testRunnerMBeanAvailable = (mbeanServer != null && mbeanServer.isRegistered(JMXTestRunnerMBean.OBJECT_NAME));
-
-                Thread.sleep(100);
-                timeout -= 100;
-            }
-
-            if (!testRunnerMBeanAvailable) {
-                throw new TimeoutException(String.format("Could not connect to the managed server's MBeanServer within [%d] ms", timeout));
-            }
-
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
     }
 
     @Override
-    public void stop(Context context) throws LifecycleException {
+    protected void stopInternal(Context context) throws LifecycleException {
         if(shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
