@@ -33,14 +33,12 @@ import java.util.logging.Logger;
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJB;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.demos.ejb3.archive.CallTrackerSingletonBean;
 import org.jboss.as.demos.ejb3.archive.SimpleSingletonBean;
 import org.jboss.as.demos.ejb3.archive.SimpleSingletonLocal;
 import org.jboss.as.demos.ejb3.archive.StartupSingleton;
-import org.jboss.as.test.spec.ejb3.LongWritesSingletonBean;
-import org.jboss.as.test.spec.ejb3.ReadOnlySingletonBean;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
