@@ -19,8 +19,8 @@ package org.jboss.as.arquillian.container;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.jboss.arquillian.spi.ContainerConfiguration;
-import org.jboss.arquillian.spi.ContainerProfile;
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
 /**
  * JBossAS7 server configuration
@@ -28,25 +28,18 @@ import org.jboss.arquillian.spi.ContainerProfile;
  * @author Thomas.Diesler@jboss.com
  * @since 17-Nov-2010
  */
-public class JBossAsContainerConfiguration implements ContainerConfiguration {
+public class JBossAsCommonConfiguration implements ContainerConfiguration {
+
     private InetAddress bindAddress;
     private int managementPort;
     private int jmxPort;
     private int httpPort;
-    private boolean executeWithServlet;
-    private long startupTimeout;
 
-    public JBossAsContainerConfiguration() {
+    public JBossAsCommonConfiguration() {
         bindAddress = getInetAddress("127.0.0.1");
         managementPort = 9999;
         jmxPort = 1090;
         httpPort = 8080;
-        startupTimeout = 10000;
-    }
-
-    @Override
-    public ContainerProfile getContainerProfile() {
-        return ContainerProfile.STANDALONE;
     }
 
     public InetAddress getBindAddress() {
@@ -81,33 +74,15 @@ public class JBossAsContainerConfiguration implements ContainerConfiguration {
         this.httpPort = httpPort;
     }
 
-    public boolean isExecuteWithServlet() {
-        if (!executeWithServlet) {
-            String val = System.getProperty("jboss.arquillian.executeWithServlet", null);
-            if (val != null) {
-                return Boolean.valueOf(val);
-            }
-        }
-        return executeWithServlet;
-    }
-
-    public void setExecuteWithServlet(boolean executeWithServlet) {
-        this.executeWithServlet = executeWithServlet;
-    }
-
-    public long getStartupTimeout() {
-        return startupTimeout;
-    }
-
-    public void setStartupTimeout(long startupTimeout) {
-        this.startupTimeout = startupTimeout;
-    }
-
     private InetAddress getInetAddress(String name) {
         try {
             return InetAddress.getByName(name);
         } catch (UnknownHostException e) {
             throw new IllegalArgumentException("Unknown host: " + name);
         }
+    }
+
+    @Override
+    public void validate() throws ConfigurationException {
     }
 }
