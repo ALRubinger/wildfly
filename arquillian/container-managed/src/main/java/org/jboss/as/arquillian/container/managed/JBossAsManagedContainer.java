@@ -36,6 +36,9 @@ import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.AbstractDeployableContainer;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.controller.PathAddress;
@@ -53,8 +56,12 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer<J
 
     private final Logger log = Logger.getLogger(JBossAsManagedContainer.class.getName());
     private MBeanServerConnectionProvider provider;
-    private Process process;
     private Thread shutdownThread;
+    private Process process;
+
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<MBeanServerConnection> mbeanServerInst;
 
     @Override
     public Class<JBossAsManagedConfiguration> getConfigurationClass() {
@@ -70,11 +77,8 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer<J
     @Override
     protected void startInternal() throws LifecycleException {
         try {
-            String jbossHomeKey = "jboss.home";
-            String jbossHomeDir = System.getProperty(jbossHomeKey);
-            if (jbossHomeDir == null)
-                throw new IllegalStateException("Cannot find system property: " + jbossHomeKey);
-
+            JBossAsManagedConfiguration config = getContainerConfiguration();
+            final String jbossHomeDir = config.getJbossHome();
             final String additionalJavaOpts = System.getProperty("jboss.options");
 
             File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
@@ -135,6 +139,8 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer<J
             if (!serverAvailable) {
                 throw new TimeoutException(String.format("Managed server was not started within [%d] ms", startupTimeout));
             }
+
+            mbeanServerInst.set(getMBeanServerConnection(5000));
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
@@ -178,9 +184,7 @@ public final class JBossAsManagedContainer extends AbstractDeployableContainer<J
 
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
-     *
      * @author Stuart Douglas
-     *
      */
     private class ConsoleConsumer implements Runnable {
 
