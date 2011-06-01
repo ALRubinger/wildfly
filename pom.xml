@@ -2878,6 +2878,12 @@
             </dependency>
             
             <dependency>
+              <groupId>org.jboss.arquillian.container</groupId>
+              <artifactId>arquillian-container-test-impl-base</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            
+            <dependency>
                 <groupId>org.jboss.arquillian.core</groupId>
                 <artifactId>arquillian-core-api</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
@@ -2931,6 +2937,12 @@
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jboss.arquillian.test</groupId>
+                <artifactId>arquillian-test-impl-base</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-cdi</artifactId>
