@@ -22,11 +22,8 @@
 
 package org.jboss.as.testsuite.integration.ejb.remove;
 
-import org.jboss.as.testsuite.integration.jpa.transaction.Employee;
-
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
-import javax.transaction.UserTransaction;
 
 /**
  * stateful session bean
