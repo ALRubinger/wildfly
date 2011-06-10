@@ -39,6 +39,10 @@
     <name>JBoss Application Server Test Suite: Aggregator</name>
 
     <modules>
+        <module>api</module>
+        <module>spec</module>
+        <module>internals</module>
+        <module>integration</module>
         <module>smoke</module>
     </modules>
 
@@ -55,6 +59,7 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-build</artifactId>
+            <scope>test</scope>
             <type>pom</type>
             <exclusions>
               <exclusion>
@@ -63,10 +68,12 @@
               </exclusion>
             </exclusions>
         </dependency>
-        <!-- Needed for @Resource(lookup=) -->
+        <!-- Export out spec APIs by default -->
         <dependency>
-           <groupId>org.jboss.spec.javax.annotation</groupId>
-           <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+          <groupId>org.jboss.as</groupId>
+          <artifactId>jboss-as-spec-api</artifactId>
+          <version>${project.version}</version>
+          <type>pom</type>
         </dependency>
         <dependency>
           <groupId>org.jboss.arquillian.container</groupId>
