@@ -17,6 +17,8 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import java.io.File;
+
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
@@ -33,7 +35,7 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private String javaHome = System.getenv("JAVA_HOME");
 
-    private String modulePath = System.getProperty("module.path", jbossHome + "/modules");
+    private String modulePath = System.getProperty("module.path");
 
     private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
@@ -52,6 +54,10 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
         Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
         if (javaHome != null) {
             Validate.configurationDirectoryExists(javaHome, "javaHome must exist");
+        }
+        // AS7-1555, correctly default the modules path if not found
+        if (modulePath == null) {
+            modulePath = getJbossHome() + File.separatorChar + "modules";
         }
     }
 
